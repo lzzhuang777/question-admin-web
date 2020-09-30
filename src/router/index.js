@@ -155,7 +155,27 @@ export const asyncRouterMap = [
         component: () => import('@/views/qms/question/update'),
         meta: {title: '编辑题目'},
         hidden: true
-      }
+      },
+      {
+        path: 'questionType',
+        name: 'questionType',
+        component: () => import('@/views/qms/questionType/index'),
+        meta: {title: '试题类型列表', icon: 'product-list'}
+      },
+      {
+        path: 'addQuestionType',
+        name: 'addQuestionType',
+        component: () => import('@/views/qms/questionType/add'),
+        meta: {title: '添加题目类型'},
+        hidden: true
+      },
+      {
+        path: 'updateQuestionType',
+        name: 'updateQuestionType',
+        component: () => import('@/views/qms/questionType/update'),
+        meta: {title: '编辑题目类型'},
+        hidden: true
+      },
     ]
   },
   {

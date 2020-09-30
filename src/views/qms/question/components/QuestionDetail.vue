@@ -5,10 +5,13 @@
              ref="questionFrom"
              label-width="150px"
              size="small">
-      <el-form-item label="题目标题：" prop="name">
+      <el-form-item label="题目标题：" prop="title">
         <el-input v-model="question.title" class="input-width"></el-input>
       </el-form-item>
-      <el-form-item label="题目答案：">
+      <el-form-item label="副标题：">
+        <el-input v-model="question.subTitle" class="input-width"></el-input>
+      </el-form-item>
+      <el-form-item label="题目答案：" >
         <el-input
           class="input-width"
           type="textarea"
@@ -18,7 +21,7 @@
         </el-input>
       </el-form-item>
       <el-form-item label="题目等级：">
-        <el-select v-model="question.type">
+        <el-select v-model="question.level">
           <el-option
             v-for="type in typeOptions"
             :key="type.value"
@@ -37,7 +40,15 @@
         <el-input v-model="question.displayOrder" class="input-width"></el-input>
       </el-form-item>
       <el-form-item label="题目类型：">
-        <el-input v-model="question.type" class="input-width"></el-input>
+        <el-select v-model="question.type"
+                   placeholder="请选择类型">
+          <el-option
+            v-for="item in typeList"
+            :key="item.id"
+            :label="item.type"
+            :value="item.id">
+          </el-option>
+        </el-select>
       </el-form-item>
 
       <el-form-item>
@@ -50,6 +61,7 @@
 <script>
   import SingleUpload from '@/components/Upload/singleUpload'
   import {createQuestion, getQuestionById, updateQuestion} from '@/api/question'
+  import {listAll} from '@/api/questionType'
   const defaultTypeOptions = [
     {
       label: 'A',
@@ -90,16 +102,19 @@
       return {
         question: null,
         rules: {
-         /*name: [
-            {required: true, message: '请输入广告名称', trigger: 'blur'},
+          title: [
+            {required: true, message: '请输入题目标题', trigger: 'blur'},
             {min: 2, max: 140, message: '长度在 2 到 140 个字符', trigger: 'blur'}
-          ],*/
-
+          ]
         },
-        typeOptions: Object.assign({}, defaultTypeOptions)
+        typeOptions: Object.assign({}, defaultTypeOptions),
+        typeList: {}
       }
     },
     created(){
+      listAll().then(response =>{
+        this.typeList = response.data;
+      });
       if (this.isEdit) {
         getQuestionById(this.$route.query.id).then(response => {
           this.question = response.data;
