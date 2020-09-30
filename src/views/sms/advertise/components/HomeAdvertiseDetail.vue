@@ -115,7 +115,6 @@
             {required: true, message: '请选择广告图片', trigger: 'blur'}
           ]
         },
-        typeOptions: Object.assign({}, defaultTypeOptions)
       }
     },
     created(){

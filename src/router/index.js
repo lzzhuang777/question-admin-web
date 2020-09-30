@@ -130,56 +130,31 @@ export const asyncRouterMap = [
     ]
   },
   {
-    path: '/oms',
+    path: '/qms',
     component: Layout,
-    redirect: '/oms/order',
-    name: 'oms',
-    meta: {title: '订单', icon: 'order'},
+    redirect: '/qms/question',
+    name: 'qms',
+    meta: {title: '试题', icon: 'order'},
     children: [
       {
-        path: 'order',
-        name: 'order',
-        component: () => import('@/views/oms/order/index'),
-        meta: {title: '订单列表', icon: 'product-list'}
+        path: 'question',
+        name: 'question',
+        component: () => import('@/views/qms/question/index'),
+        meta: {title: '试题列表', icon: 'product-list'}
       },
       {
-        path: 'orderDetail',
-        name: 'orderDetail',
-        component: () => import('@/views/oms/order/orderDetail'),
-        meta: {title: '订单详情'},
-        hidden:true
+        path: 'addQuestion',
+        name: 'addQuestion',
+        component: () => import('@/views/qms/question/add'),
+        meta: {title: '添加题目'},
+        hidden: true
       },
       {
-        path: 'deliverOrderList',
-        name: 'deliverOrderList',
-        component: () => import('@/views/oms/order/deliverOrderList'),
-        meta: {title: '发货列表'},
-        hidden:true
-      },
-      {
-        path: 'orderSetting',
-        name: 'orderSetting',
-        component: () => import('@/views/oms/order/setting'),
-        meta: {title: '订单设置', icon: 'order-setting'}
-      },
-      {
-        path: 'returnApply',
-        name: 'returnApply',
-        component: () => import('@/views/oms/apply/index'),
-        meta: {title: '退货申请处理', icon: 'order-return'}
-      },
-      {
-        path: 'returnReason',
-        name: 'returnReason',
-        component: () => import('@/views/oms/apply/reason'),
-        meta: {title: '退货原因设置', icon: 'order-return-reason'}
-      },
-      {
-        path: 'returnApplyDetail',
-        name: 'returnApplyDetail',
-        component: () => import('@/views/oms/apply/applyDetail'),
-        meta: {title: '退货原因详情'},
-        hidden:true
+        path: 'updateQuestion',
+        name: 'updateQuestion',
+        component: () => import('@/views/qms/question/update'),
+        meta: {title: '编辑题目'},
+        hidden: true
       }
     ]
   },
