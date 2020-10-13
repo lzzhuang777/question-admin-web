@@ -11,14 +11,49 @@
       <el-form-item label="副标题：">
         <el-input v-model="question.subTitle" class="input-width"></el-input>
       </el-form-item>
-      <el-form-item label="题目答案：" >
-        <el-input
-          class="input-width"
-          type="textarea"
-          :rows="5"
-          placeholder="请输入内容"
-          v-model="question.answer">
-        </el-input>
+      <el-form-item label="题目正确答案：" >
+        <el-input v-model="question.answer" class="input-width"></el-input>
+      </el-form-item>
+      <el-form-item label="题目所有答案：" >
+        <el-button size="mini" class="btn-add" @click="answerAdd()">添加试题答案</el-button>
+          <el-table style="width: 100%;margin-top: 20px"
+                    :data="selectAnswers"
+                    border>
+            <el-table-column
+              label="题目答案"
+              align="center">
+              <template slot-scope="scope">
+                <el-input v-model="scope.row.answer"></el-input>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="题目类型"
+              width="80"
+              align="center">
+              <template slot-scope="scope">
+                <el-input v-model="scope.row.type"></el-input>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="head"
+              width="80"
+              align="center">
+              <template slot-scope="scope">
+                <el-input v-model="scope.row.answerHead"></el-input>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="操作"
+              width="80"
+              align="center">
+              <template slot-scope="scope">
+                <el-button
+                  type="text"
+                  @click="handleRemoveProductSku(scope.$index, scope.row)">删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
       </el-form-item>
       <el-form-item label="题目等级：">
         <el-select v-model="question.level">
@@ -60,7 +95,7 @@
 </template>
 <script>
   import SingleUpload from '@/components/Upload/singleUpload'
-  import {createQuestion, getQuestionById, updateQuestion} from '@/api/question'
+  import {createQuestion, getQuestionById, updateQuestion,getAnswerList} from '@/api/question'
   import {listAll} from '@/api/questionType'
   const defaultTypeOptions = [
     {
@@ -108,7 +143,13 @@
           ]
         },
         typeOptions: Object.assign({}, defaultTypeOptions),
-        typeList: {}
+        typeList: {},
+        selectAnswers:null,
+        answer: {
+          answer: '',
+          type: '',
+          answerHead: ''
+        }
       }
     },
     created(){
@@ -119,6 +160,9 @@
         getQuestionById(this.$route.query.id).then(response => {
           this.question = response.data;
         });
+        getAnswerList(this.$route.query.id).then(response =>{
+          this.selectAnswers = response.data;
+        })
       }else{
         this.question = Object.assign({},defaultQuestion);
       }
@@ -168,6 +212,10 @@
       resetForm(formName) {
         this.$refs[formName].resetFields();
         this.question = Object.assign({},defaultQuestion);
+      },
+      answerAdd(){
+        console.log(this.selectAnswers);
+        this.selectAnswers.push(this.answer);
       }
     }
   }

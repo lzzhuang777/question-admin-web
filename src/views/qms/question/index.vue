@@ -41,14 +41,14 @@
         <el-table-column label="编号" width="120" align="center">
           <template slot-scope="scope">{{scope.row.id}}</template>
         </el-table-column>
-        <el-table-column label="题目标题" width="120" align="center">
+        <el-table-column label="题目标题"  align="center">
           <template slot-scope="scope">{{scope.row.title}}</template>
         </el-table-column>
         <el-table-column label="题目等级" width="120" align="center">
-          <template slot-scope="scope">{{scope.row.level | formatType}}</template>
+          <template slot-scope="scope">{{scope.row.level | formatLevel}}</template>
         </el-table-column>
         <el-table-column label="题目类型" width="120" align="center">
-          <template slot-scope="scope">{{scope.row.type}}</template>
+          <template slot-scope="scope">{{scope.row.type | formatType}}</template>
         </el-table-column>
 
         <el-table-column label="上线/下线" width="120" align="center">
@@ -61,7 +61,7 @@
             </el-switch>
           </template>
         </el-table-column>
-        <el-table-column label="题目答案"  align="center">
+        <el-table-column label="题目正确答案" width="120"  align="center">
           <template slot-scope="scope">{{scope.row.answer}}</template>
         </el-table-column>
         <el-table-column label="序号" width="120" align="center">
@@ -117,6 +117,7 @@
 </template>
 <script>
   import {fetchList,updateStatus,deleteQuestion} from '@/api/question';
+  import {listAll} from '@/api/questionType';
   import {formatDate} from '@/utils/date';
   const defaultListQuery = {
     pageNum: 1,
@@ -124,7 +125,20 @@
     title: null,
 
   };
-
+  const typeList = [
+      {
+        id: 1,
+        type: "基础"
+      },
+      {
+        id: 5,
+        type: "MySQL"
+      },
+      {
+        id: 9,
+        type: "GIT"
+      }
+    ];
   export default {
     name: 'questionList',
     data() {
@@ -140,19 +154,20 @@
             value: 0
           }
         ],
-        operateType: null
+        operateType: null,
       }
     },
     created() {
       this.getList();
+
     },
     filters:{
-      formatType(type){
-        if(type===1){
+      formatLevel(level){
+        if(level===1){
           return 'D';
-        }else if(type===2){
+        }else if(level===2){
           return 'C';
-        }else if(type===3){
+        }else if(level===3){
           return 'B';
         }else {
           return 'A';
@@ -165,6 +180,13 @@
         let date = new Date(time);
         return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
       },
+      formatType(typeId){
+        for(let i=0;i<typeList.length;i++){
+          if(typeList[i].id === typeId){
+            return typeList[i].type;
+          }
+        }
+      }
     },
     methods: {
       handleResetSearch() {

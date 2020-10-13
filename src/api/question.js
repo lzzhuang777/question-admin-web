@@ -36,8 +36,17 @@ export function getQuestionById(id) {
 
 export function updateQuestion(id,data) {
   return request({
-    url:'/admin/question/update/'+id,
-    method:'post',
-    data:data
+    url: '/admin/question/update/' + id,
+    method: 'post',
+    data: data
   })
 }
+
+  export function getAnswerList(id) {
+    return request({
+      url:'/admin/question/answerList/'+id,
+      method:'get',
+    })
+  }
+
+
