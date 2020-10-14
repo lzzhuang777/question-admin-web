@@ -41,13 +41,13 @@
         <el-table-column label="编号" width="120" align="center">
           <template slot-scope="scope">{{scope.row.id}}</template>
         </el-table-column>
-        <el-table-column label="名称" width="120" align="center">
+        <el-table-column label="名称" width="200" align="center">
           <template slot-scope="scope">{{scope.row.type}}</template>
         </el-table-column>
-        <el-table-column label="备注" width="120" align="center">
+        <el-table-column label="备注" width="200" align="center">
           <template slot-scope="scope">{{scope.row.comment | formatType}}</template>
         </el-table-column>
-        <el-table-column label="logo" width="120" align="center">
+        <el-table-column label="logo" width="200" align="center">
           <template slot-scope="scope"><img style="height: 80px" :src="scope.row.pic"></template>
         </el-table-column>
         <el-table-column label="创建时间"  align="center">
@@ -55,7 +55,7 @@
             {{scope.row.createTime | formatTime}}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" align="center">
+        <el-table-column label="操作" width="200" align="center">
           <template slot-scope="scope">
             <el-button size="mini"
                        type="text"

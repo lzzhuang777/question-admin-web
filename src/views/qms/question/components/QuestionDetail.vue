@@ -17,7 +17,7 @@
       <el-form-item label="题目所有答案：" >
         <el-button size="mini" class="btn-add" @click="answerAdd()">添加试题答案</el-button>
           <el-table style="width: 100%;margin-top: 20px"
-                    :data="selectAnswers"
+                    :data="question.answerList"
                     border>
             <el-table-column
               label="题目答案"
@@ -49,7 +49,7 @@
               <template slot-scope="scope">
                 <el-button
                   type="text"
-                  @click="handleRemoveProductSku(scope.$index, scope.row)">删除
+                  @click="delAnswer(scope.$index)">删除
                 </el-button>
               </template>
             </el-table-column>
@@ -67,8 +67,8 @@
       </el-form-item>
       <el-form-item label="上线/下线：">
         <el-radio-group v-model="question.enable">
-          <el-radio :label="0">下线</el-radio>
-          <el-radio :label="1">上线</el-radio>
+          <el-radio :label="false">下线</el-radio>
+          <el-radio :label="true">上线</el-radio>
         </el-radio-group>
       </el-form-item>
       <el-form-item label="排序：">
@@ -95,7 +95,7 @@
 </template>
 <script>
   import SingleUpload from '@/components/Upload/singleUpload'
-  import {createQuestion, getQuestionById, updateQuestion,getAnswerList} from '@/api/question'
+  import {createQuestion, getQuestionAnswerVO, updateQuestion} from '@/api/question'
   import {listAll} from '@/api/questionType'
   const defaultTypeOptions = [
     {
@@ -116,13 +116,15 @@
     }
   ];
   const defaultQuestion = {
-    title: null,
-    type: -1,
+    title: '',
+    type: 1,
     answer: null,
     level: 1,
     subTitle: null,
     status: 0,
-    displayOrder: 0
+    enable: true,
+    displayOrder: 0,
+    answerList: null
   };
   export default {
     name: 'QuestionDetail',
@@ -135,7 +137,7 @@
     },
     data() {
       return {
-        question: null,
+        question: Object.assign({}, defaultQuestion),
         rules: {
           title: [
             {required: true, message: '请输入题目标题', trigger: 'blur'},
@@ -144,7 +146,24 @@
         },
         typeOptions: Object.assign({}, defaultTypeOptions),
         typeList: {},
-        selectAnswers:null,
+        defaultAnwserList: [
+          { answer: '',
+            type: 0,
+            answerHead: 'A'
+          },
+          { answer: '',
+            type: 0,
+            answerHead: 'B'
+          },
+          { answer: '',
+            type: 0,
+            answerHead: 'C'
+          },
+          { answer: '',
+            type: 0,
+            answerHead: 'D'
+          }
+        ],
         answer: {
           answer: '',
           type: '',
@@ -157,12 +176,9 @@
         this.typeList = response.data;
       });
       if (this.isEdit) {
-        getQuestionById(this.$route.query.id).then(response => {
+        getQuestionAnswerVO(this.$route.query.id).then(response => {
           this.question = response.data;
         });
-        getAnswerList(this.$route.query.id).then(response =>{
-          this.selectAnswers = response.data;
-        })
       }else{
         this.question = Object.assign({},defaultQuestion);
       }
@@ -177,7 +193,7 @@
               type: 'warning'
             }).then(() => {
               if (this.isEdit) {
-                updateQuestion(this.$route.query.id, this.question).then(response => {
+                updateQuestion(this.question).then(response => {
                   this.$refs[formName].resetFields();
                   this.$message({
                     message: '修改成功',
@@ -214,8 +230,16 @@
         this.question = Object.assign({},defaultQuestion);
       },
       answerAdd(){
-        console.log(this.selectAnswers);
-        this.selectAnswers.push(this.answer);
+        if(this.question.answerList == null){
+          this.question.answerList = this.defaultAnwserList;
+        }else{
+          this.question.answerList.push(this.answer);
+        }
+        console.log(this.question.answerList);
+      },
+      delAnswer(index){
+        console.log(this.question.answerList);
+        this.question.answerList.splice(index,1)
       }
     }
   }

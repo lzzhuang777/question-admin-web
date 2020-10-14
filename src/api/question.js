@@ -34,9 +34,16 @@ export function getQuestionById(id) {
   })
 }
 
-export function updateQuestion(id,data) {
+export function getQuestionAnswerVO(id) {
   return request({
-    url: '/admin/question/update/' + id,
+    url:'/admin/question/getQuestionAnswerVO/'+id,
+    method:'get',
+  })
+}
+
+export function updateQuestion(data) {
+  return request({
+    url: '/admin/question/update/',
     method: 'post',
     data: data
   })

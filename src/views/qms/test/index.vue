@@ -20,8 +20,8 @@
       </div>
       <div style="margin-top: 15px">
         <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
-          <el-form-item label="题目标题：">
-            <el-input v-model="listQuery.title" class="input-width" placeholder="题目标题"></el-input>
+          <el-form-item label="测验名称：">
+            <el-input v-model="listQuery.testName" class="input-width" placeholder="类型名称"></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -29,10 +29,10 @@
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
       <span>数据列表</span>
-      <el-button size="mini" class="btn-add" @click="handleAdd()">添加试题</el-button>
+      <el-button size="mini" class="btn-add" @click="handleAdd()">添加测验</el-button>
     </el-card>
     <div class="table-container">
-      <el-table ref="homeAdvertiseTable"
+      <el-table ref="testTable"
                 :data="list"
                 style="width: 100%;"
                 @selection-change="handleSelectionChange"
@@ -41,33 +41,21 @@
         <el-table-column label="编号" width="120" align="center">
           <template slot-scope="scope">{{scope.row.id}}</template>
         </el-table-column>
-        <el-table-column label="题目标题"  align="center">
-          <template slot-scope="scope">{{scope.row.title}}</template>
+        <el-table-column label="名称" width="200" align="center">
+          <template slot-scope="scope">{{scope.row.type}}</template>
         </el-table-column>
-        <el-table-column label="题目等级" width="120" align="center">
-          <template slot-scope="scope">{{scope.row.level | formatLevel}}</template>
+        <el-table-column label="备注" width="200" align="center">
+          <template slot-scope="scope">{{scope.row.comment | formatType}}</template>
         </el-table-column>
-        <el-table-column label="题目类型" width="120" align="center">
-          <template slot-scope="scope">{{scope.row.type | formatType}}</template>
+        <el-table-column label="logo" width="200" align="center">
+          <template slot-scope="scope"><img style="height: 80px" :src="scope.row.pic"></template>
         </el-table-column>
-
-        <el-table-column label="上线/下线" width="120" align="center">
+        <el-table-column label="创建时间"  align="center">
           <template slot-scope="scope">
-            <el-switch
-              @change="handleUpdateStatus(scope.$index, scope.row)"
-              :active-value="true"
-              :inactive-value="false"
-              v-model="scope.row.enable">
-            </el-switch>
+            {{scope.row.createTime | formatTime}}
           </template>
         </el-table-column>
-        <el-table-column label="题目正确答案" width="120"  align="center">
-          <template slot-scope="scope">{{scope.row.answer}}</template>
-        </el-table-column>
-        <el-table-column label="序号" width="120" align="center">
-          <template slot-scope="scope">{{scope.row.displayOrder}}</template>
-        </el-table-column>
-        <el-table-column label="操作" width="120" align="center">
+        <el-table-column label="操作" width="200" align="center">
           <template slot-scope="scope">
             <el-button size="mini"
                        type="text"
@@ -116,35 +104,17 @@
   </div>
 </template>
 <script>
-  import {fetchList,updateStatus,deleteQuestion} from '@/api/question';
-  import {listAll} from '@/api/questionType';
+  import {fetchList,deleteType} from '@/api/test';
   import {formatDate} from '@/utils/date';
   const defaultListQuery = {
     pageNum: 1,
     pageSize: 5,
-    title: null,
+    testName: null,
 
   };
-  const typeList = [
-      {
-        id: 1,
-        type: "基础"
-      },
-      {
-        id: 5,
-        type: "MySQL"
-      },
-      {
-        id: 9,
-        type: "GIT"
-      },
-      {
-        id: 7,
-        type: "Spring"
-      }
-    ];
+
   export default {
-    name: 'questionList',
+    name: 'testList',
     data() {
       return {
         listQuery: Object.assign({}, defaultListQuery),
@@ -158,25 +128,13 @@
             value: 0
           }
         ],
-        operateType: null,
+        operateType: null
       }
     },
     created() {
       this.getList();
-
     },
     filters:{
-      formatLevel(level){
-        if(level===1){
-          return 'D';
-        }else if(level===2){
-          return 'C';
-        }else if(level===3){
-          return 'B';
-        }else {
-          return 'A';
-        }
-      },
       formatTime(time){
         if(time==null||time===''){
           return 'N/A';
@@ -184,13 +142,6 @@
         let date = new Date(time);
         return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
       },
-      formatType(typeId){
-        for(let i=0;i<typeList.length;i++){
-          if(typeList[i].id === typeId){
-            return typeList[i].type;
-          }
-        }
-      }
     },
     methods: {
       handleResetSearch() {
@@ -211,27 +162,6 @@
       handleCurrentChange(val) {
         this.listQuery.pageNum = val;
         this.getList();
-      },
-      handleUpdateStatus(index,row){
-        this.$confirm('是否要修改上线/下线状态?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          updateStatus(row.id,{enable:row.enable}).then(response=>{
-            this.getList();
-            this.$message({
-              type: 'success',
-              message: '修改成功!'
-            });
-          });
-        }).catch(() => {
-          this.$message({
-            type: 'success',
-            message: '已取消操作!'
-          });
-          this.getList();
-        });
       },
       handleDelete(index,row){
         this.deleteHomeAdvertise(row.id);
@@ -261,10 +191,10 @@
         }
       },
       handleAdd(){
-        this.$router.push({path: '/qms/addQuestion'})
+        this.$router.push({path: '/qms/addQuestionType'})
       },
       handleUpdate(index,row){
-        this.$router.push({path: '/qms/updateQuestion', query: {id: row.id}})
+        this.$router.push({path: '/qms/addQuestionType', query: {id: row.id}})
       },
       getList() {
         this.listLoading = true;
@@ -282,7 +212,7 @@
         }).then(() => {
           let params=new URLSearchParams();
           params.append("ids",ids);
-          deleteQuestion(params).then(response=>{
+          deleteType(params).then(response=>{
             this.getList();
             this.$message({
               type: 'success',
