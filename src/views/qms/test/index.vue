@@ -121,27 +121,63 @@
         <el-button type="primary" @click="handleDialogConfirm()" size="small">确 定</el-button>
       </span>
     </el-dialog>
+
     <el-dialog
       :title="'测验添加试题'"
       :visible.sync="testDialogVisible"
       width="40%">
       <el-transfer
+        style="text-align: left; display: inline-block"
+        :titles="['Source', 'Target']"
         filterable
         :filter-method="filterMethod"
         filter-placeholder="搜索题目"
-        v-model="value"
-        :data="data">
+        v-model="chooseQues.value"
+        :data="chooseQues.data">
       </el-transfer>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
-        <el-button type="primary" @click="handleQuesDialogConfirm()" size="small">确 定</el-button>
+      <span style="margin-left: 50px " >
+        <el-button type="primary" @click="handleQuesDialogConfirm()" size="small">确定分配</el-button>
       </span>
+      <hr style="margin-top: 20px" align=center width=100% color=#EBEEF5 SIZE=1>
+      <p style="text-align: left; margin: 10px 0 20px">已分配的测验题目:</p>
+      <el-table style="width: 100%;margin-top: 20px"
+                :data="questions"
+                border>
+        <el-table-column
+          label="题目标题"
+          align="center">
+          <template slot-scope="scope">{{scope.row.title}}</template>
+        </el-table-column>
+        <el-table-column
+          label="题目类型"
+          width="80"
+          align="center">
+          <template slot-scope="scope">{{scope.row.type | formatType}}</template>
+        </el-table-column>
+        <el-table-column
+          label="题目等级"
+          width="80"
+          align="center">
+          <template slot-scope="scope">{{scope.row.level | formatLevel}}</template>
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          width="80"
+          align="center">
+          <template slot-scope="scope">
+            <el-button
+              type="text"
+              @click="delAnswer(scope.$index)">删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
     </el-dialog>
   </div>
 </template>
 <script>
   import {fetchList,addTestQuestions,createTest,updateTest} from '@/api/test';
-  import {selectQuesList} from '@/api/question';
+  import {selectQuesList,selectQuestionsByTestId} from '@/api/question';
   import {formatDate} from '@/utils/date';
   const defaultListQuery = {
     pageNum: 1,
@@ -150,12 +186,38 @@
 
   };
   const defaultTest = {
-
     id:null,
     testName: null,
     type: 0,
     createTime: null,
   };
+  const defaultChooseQues ={
+    data: [],
+    value: [],
+    volatile: null,
+    param : {
+      query: '',
+      testId: null
+    },
+  };
+  const typeList = [
+    {
+      id: 1,
+      type: "基础"
+    },
+    {
+      id: 5,
+      type: "MySQL"
+    },
+    {
+      id: 9,
+      type: "GIT"
+    },
+    {
+      id: 7,
+      type: "Spring"
+    }
+  ];
   export default {
     name: 'testList',
     data() {
@@ -169,8 +231,9 @@
         isEdit: false,
         dialogVisible: false,
         testDialogVisible: false,
-        data:[],
-        value:[],
+        chooseQues : Object.assign({}, defaultChooseQues),
+        selectQuesList: [],
+        questions:null,
         operates: [
           {
             label: "删除",
@@ -184,6 +247,17 @@
       this.getList();
     },
     filters:{
+      formatLevel(level){
+        if(level===1){
+          return 'D';
+        }else if(level===2){
+          return 'C';
+        }else if(level===3){
+          return 'B';
+        }else {
+          return 'A';
+        }
+      },
       formatTime(time){
         if(time==null||time===''){
           return 'N/A';
@@ -191,6 +265,13 @@
         let date = new Date(time);
         return formatDate(date, 'yyyy-MM-dd hh:mm:ss')
       },
+      formatType(typeId){
+        for(let i=0;i<typeList.length;i++){
+          if(typeList[i].id === typeId){
+            return typeList[i].type;
+          }
+        }
+      }
     },
     methods: {
       handleResetSearch() {
@@ -267,20 +348,30 @@
           params.append("ids",ids);
         })
       },
-      handleSelectQuestions(){
-        let param = {query:''};
-        selectQuesList(param).then(response =>{
+      handleSelectQuestions(index,row){
+        this.chooseQues.volatile = null;
+        this.chooseQues.data = [];
+        this.chooseQues.value = [];
+        this.selectQuesList = [];
+        this.chooseQues.param.testId = row.id;
+        selectQuesList(this.chooseQues.param).then(response =>{
           response.data.forEach((ques,index) =>{
-            this.data.push({
+            this.chooseQues.data.push({
               label: ques.title,
               key: index,
               id: ques.id,
               subtitle: ques.subTitle
+            });
+            this.selectQuesList.push({
+              id: ques.id,
             })
           })
         });
+        selectQuestionsByTestId(row.id).then(response =>{
+          this.questions = response.data;
+        });
+        this.chooseQues.volatile = row.id;
         this.testDialogVisible =true;
-
       },
       handleDialogConfirm(){
         this.$confirm('是否要确认?', '提示', {
@@ -313,7 +404,26 @@
         return item.subtitle.indexOf(query) > -1;
       },
       handleQuesDialogConfirm(){
-
+        this.$confirm('是否要确认?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let value =[];
+          for(let i =0;i<this.chooseQues.value.length;i++){
+            value.push(this.selectQuesList[this.chooseQues.value[i]].id)
+          }
+          addTestQuestions(this.chooseQues.volatile,value).then(response =>{
+            this.$message({
+              message: '分配题目成功！',
+              type: 'success'
+            });
+          });
+          this.testDialogVisible = false;
+        })
+      },
+      cancelConfirm(){
+        this.testDialogVisible = false;
       }
     }
   }

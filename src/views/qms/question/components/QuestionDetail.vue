@@ -39,7 +39,7 @@
               width="80"
               align="center">
               <template slot-scope="scope">
-                <el-input v-model="scope.row.answerHead"></el-input>
+                <el-input v-model="scope.row.level"></el-input>
               </template>
             </el-table-column>
             <el-table-column
@@ -235,10 +235,8 @@
         }else{
           this.question.answerList.push(this.answer);
         }
-        console.log(this.question.answerList);
       },
       delAnswer(index){
-        console.log(this.question.answerList);
         this.question.answerList.splice(index,1)
       }
     }

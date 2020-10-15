@@ -7,7 +7,6 @@ export function fetchList(params) {
     params:params
   })
 }
-
 export function createTest(data) {
   return request({
     url:'/admin/qmsTest/create',

@@ -69,3 +69,10 @@ export function selectQuesList(params) {
   })
 }
 
+export function selectQuestionsByTestId(id) {
+  return request({
+    url: '/admin/question/selectQuestionsByTestId/'+id,
+    method: 'get',
+  })
+}
+
