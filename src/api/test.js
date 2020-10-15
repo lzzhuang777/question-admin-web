@@ -1,46 +1,47 @@
 import request from '@/utils/request'
 
-export function listAll() {
-  return request({
-    url:'/admin/questionType/listAll',
-    method:'get',
-  })
-}
-
 export function fetchList(params) {
   return request({
-    url:'/admin/questionType/list',
+    url:'/admin/qmsTest/list',
     method:'get',
     params:params
   })
 }
 
-export function createType(data) {
+export function createTest(data) {
   return request({
-    url:'/admin/questionType/listAll',
+    url:'/admin/qmsTest/create',
     method:'post',
     data:data
   })
 }
 
-export function getTypeById(id) {
+export function updateTest(id,data) {
   return request({
-    url:'/admin/questionType/'+id,
+    url:'/admin/qmsTest/update/'+id,
+    method:'post',
+    data:data
+  })
+}
+
+export function getTestById(id) {
+  return request({
+    url:'/admin/qmsTest/'+id,
     method:'get',
   })
 }
 
-export function updateType(id,data) {
+export function addTestQuestions(id,data) {
   return request({
-    url: '/admin/questionType/update/' + id,
+    url: '/admin/qmsTest/addTestQuestions/' + id,
     method: 'post',
     data: data
   })
 }
 
-  export function deleteType(data) {
+  export function deleteTest(data) {
     return request({
-      url:'/admin/questionType/delete',
+      url:'/admin/qmsTest/delete',
       method:'post',
       data:data
     })

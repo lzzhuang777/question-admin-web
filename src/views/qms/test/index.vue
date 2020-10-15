@@ -21,7 +21,7 @@
       <div style="margin-top: 15px">
         <el-form :inline="true" :model="listQuery" size="small" label-width="140px">
           <el-form-item label="测验名称：">
-            <el-input v-model="listQuery.testName" class="input-width" placeholder="类型名称"></el-input>
+            <el-input v-model="listQuery.testName" class="input-width" placeholder="测验名称"></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -41,14 +41,11 @@
         <el-table-column label="编号" width="120" align="center">
           <template slot-scope="scope">{{scope.row.id}}</template>
         </el-table-column>
-        <el-table-column label="名称" width="200" align="center">
-          <template slot-scope="scope">{{scope.row.type}}</template>
+        <el-table-column label="测验名称" width="200" align="center">
+          <template slot-scope="scope">{{scope.row.testName}}</template>
         </el-table-column>
-        <el-table-column label="备注" width="200" align="center">
-          <template slot-scope="scope">{{scope.row.comment | formatType}}</template>
-        </el-table-column>
-        <el-table-column label="logo" width="200" align="center">
-          <template slot-scope="scope"><img style="height: 80px" :src="scope.row.pic"></template>
+        <el-table-column label="测验类型" width="200" align="center">
+          <template slot-scope="scope">{{scope.row.type }}</template>
         </el-table-column>
         <el-table-column label="创建时间"  align="center">
           <template slot-scope="scope">
@@ -57,6 +54,10 @@
         </el-table-column>
         <el-table-column label="操作" width="200" align="center">
           <template slot-scope="scope">
+            <el-button size="mini"
+                       type="text"
+                       @click="handleSelectQuestions(scope.$index, scope.row)">分配试题
+            </el-button>
             <el-button size="mini"
                        type="text"
                        @click="handleUpdate(scope.$index, scope.row)">编辑
@@ -101,10 +102,46 @@
         :total="total">
       </el-pagination>
     </div>
+    <el-dialog
+      :title="isEdit?'编辑测验':'添加测验'"
+      :visible.sync="dialogVisible"
+      width="40%">
+      <el-form :model="test"
+               ref="testForm"
+               label-width="150px" size="small">
+        <el-form-item label="测验名称：">
+          <el-input v-model="test.testName" style="width: 250px"></el-input>
+        </el-form-item>
+        <el-form-item label="测验类型：">
+          <el-input v-model="test.type" style="width: 250px"></el-input>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="handleDialogConfirm()" size="small">确 定</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog
+      :title="'测验添加试题'"
+      :visible.sync="testDialogVisible"
+      width="40%">
+      <el-transfer
+        filterable
+        :filter-method="filterMethod"
+        filter-placeholder="搜索题目"
+        v-model="value"
+        :data="data">
+      </el-transfer>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false" size="small">取 消</el-button>
+        <el-button type="primary" @click="handleQuesDialogConfirm()" size="small">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 <script>
-  import {fetchList,deleteType} from '@/api/test';
+  import {fetchList,addTestQuestions,createTest,updateTest} from '@/api/test';
+  import {selectQuesList} from '@/api/question';
   import {formatDate} from '@/utils/date';
   const defaultListQuery = {
     pageNum: 1,
@@ -112,7 +149,13 @@
     testName: null,
 
   };
+  const defaultTest = {
 
+    id:null,
+    testName: null,
+    type: 0,
+    createTime: null,
+  };
   export default {
     name: 'testList',
     data() {
@@ -120,8 +163,14 @@
         listQuery: Object.assign({}, defaultListQuery),
         list: null,
         total: null,
+        test: Object.assign({}, defaultTest),
         listLoading: false,
         multipleSelection: [],
+        isEdit: false,
+        dialogVisible: false,
+        testDialogVisible: false,
+        data:[],
+        value:[],
         operates: [
           {
             label: "删除",
@@ -191,10 +240,14 @@
         }
       },
       handleAdd(){
-        this.$router.push({path: '/qms/addQuestionType'})
+        this.dialogVisible = true;
+        this.test = Object.assign({},defaultTest);
       },
       handleUpdate(index,row){
-        this.$router.push({path: '/qms/addQuestionType', query: {id: row.id}})
+        this.dialogVisible = true;
+        this.isEdit = true;
+        this.test = Object.assign({},row);
+
       },
       getList() {
         this.listLoading = true;
@@ -212,14 +265,55 @@
         }).then(() => {
           let params=new URLSearchParams();
           params.append("ids",ids);
-          deleteType(params).then(response=>{
-            this.getList();
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            });
-          });
         })
+      },
+      handleSelectQuestions(){
+        let param = {query:''};
+        selectQuesList(param).then(response =>{
+          response.data.forEach((ques,index) =>{
+            this.data.push({
+              label: ques.title,
+              key: index,
+              id: ques.id,
+              subtitle: ques.subTitle
+            })
+          })
+        });
+        this.testDialogVisible =true;
+
+      },
+      handleDialogConfirm(){
+        this.$confirm('是否要确认?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          if (this.isEdit) {
+            updateTest(this.test.id,this.test).then(response => {
+              this.$message({
+                message: '修改成功！',
+                type: 'success'
+              });
+              this.dialogVisible =false;
+              this.getList();
+            })
+          } else {
+            createTest(this.test).then(response => {
+              this.$message({
+                message: '添加成功！',
+                type: 'success'
+              });
+              this.dialogVisible =false;
+              this.getList();
+            })
+          }
+        })
+      },
+      filterMethod(query, item){
+        return item.subtitle.indexOf(query) > -1;
+      },
+      handleQuesDialogConfirm(){
+
       }
     }
   }

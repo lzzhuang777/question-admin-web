@@ -176,6 +176,13 @@ export const asyncRouterMap = [
         meta: {title: '编辑题目类型'},
         hidden: true
       },
+      {
+        path: 'test',
+        name: 'test',
+        component: () => import('@/views/qms/test/index'),
+        meta: {title: '测验列表',icon: 'product-list'},
+
+      },
     ]
   },
   {
