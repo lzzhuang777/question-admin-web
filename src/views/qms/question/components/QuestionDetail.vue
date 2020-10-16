@@ -39,7 +39,7 @@
               width="80"
               align="center">
               <template slot-scope="scope">
-                <el-input v-model="scope.row.level"></el-input>
+                <el-input v-model="scope.row.answerHead"></el-input>
               </template>
             </el-table-column>
             <el-table-column

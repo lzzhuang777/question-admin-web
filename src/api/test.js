@@ -38,6 +38,14 @@ export function addTestQuestions(id,data) {
   })
 }
 
+export function delTestQuestions(data) {
+  return request({
+    url:'/admin/qmsTest/delTestQuestions',
+    method:'post',
+    data:data
+  })
+}
+
   export function deleteTest(data) {
     return request({
       url:'/admin/qmsTest/delete',

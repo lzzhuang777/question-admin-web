@@ -56,7 +56,7 @@
           <template slot-scope="scope">
             <el-button size="mini"
                        type="text"
-                       @click="handleSelectQuestions(scope.$index, scope.row)">分配试题
+                       @click="handleSelectQuestions(scope.row.id)">分配试题
             </el-button>
             <el-button size="mini"
                        type="text"
@@ -123,11 +123,13 @@
     </el-dialog>
 
     <el-dialog
-      :title="'测验添加试题'"
+      :title="'测验分配试题'"
       :visible.sync="testDialogVisible"
-      width="40%">
+      width="40%"
+      class="dialogClass">
+      <hr style="margin: 0 0 20px " align=center width=100% color=#EBEEF5 SIZE=1>
       <el-transfer
-        style="text-align: left; display: inline-block"
+        style="text-align: left; display: inline-block;margin-top: 0"
         :titles="['Source', 'Target']"
         filterable
         :filter-method="filterMethod"
@@ -136,10 +138,9 @@
         :data="chooseQues.data">
       </el-transfer>
       <span style="margin-left: 50px " >
-        <el-button type="primary" @click="handleQuesDialogConfirm()" size="small">确定分配</el-button>
+        <el-button type="primary" @click="handleQuesDialogConfirm()" size="small">点击分配</el-button>
       </span>
-      <hr style="margin-top: 20px" align=center width=100% color=#EBEEF5 SIZE=1>
-      <p style="text-align: left; margin: 10px 0 20px">已分配的测验题目:</p>
+      <p style="text-align: left; margin: 20px 0 0">已分配的测验题目:</p>
       <el-table style="width: 100%;margin-top: 20px"
                 :data="questions"
                 border>
@@ -167,7 +168,7 @@
           <template slot-scope="scope">
             <el-button
               type="text"
-              @click="delAnswer(scope.$index)">删除
+              @click="delQuestion(scope.$index,scope.row)">删除
             </el-button>
           </template>
         </el-table-column>
@@ -176,14 +177,13 @@
   </div>
 </template>
 <script>
-  import {fetchList,addTestQuestions,createTest,updateTest} from '@/api/test';
+  import {fetchList,addTestQuestions,createTest,updateTest,delTestQuestions} from '@/api/test';
   import {selectQuesList,selectQuestionsByTestId} from '@/api/question';
   import {formatDate} from '@/utils/date';
   const defaultListQuery = {
     pageNum: 1,
     pageSize: 5,
     testName: null,
-
   };
   const defaultTest = {
     id:null,
@@ -328,7 +328,6 @@
         this.dialogVisible = true;
         this.isEdit = true;
         this.test = Object.assign({},row);
-
       },
       getList() {
         this.listLoading = true;
@@ -348,12 +347,12 @@
           params.append("ids",ids);
         })
       },
-      handleSelectQuestions(index,row){
+      handleSelectQuestions(testId){
         this.chooseQues.volatile = null;
         this.chooseQues.data = [];
         this.chooseQues.value = [];
         this.selectQuesList = [];
-        this.chooseQues.param.testId = row.id;
+        this.chooseQues.param.testId = testId;
         selectQuesList(this.chooseQues.param).then(response =>{
           response.data.forEach((ques,index) =>{
             this.chooseQues.data.push({
@@ -367,11 +366,14 @@
             })
           })
         });
-        selectQuestionsByTestId(row.id).then(response =>{
+        this.selectQuestionsByTestId(testId);
+        this.chooseQues.volatile = testId;
+        this.testDialogVisible =true;
+      },
+      selectQuestionsByTestId(id){
+        selectQuestionsByTestId(id).then(response =>{
           this.questions = response.data;
         });
-        this.chooseQues.volatile = row.id;
-        this.testDialogVisible =true;
       },
       handleDialogConfirm(){
         this.$confirm('是否要确认?', '提示', {
@@ -410,24 +412,49 @@
           type: 'warning'
         }).then(() => {
           let value =[];
-          for(let i =0;i<this.chooseQues.value.length;i++){
-            value.push(this.selectQuesList[this.chooseQues.value[i]].id)
+          let len = this.chooseQues.value.length;
+          for(let i =0;i<len;i++){
+            value.push(this.selectQuesList[this.chooseQues.value[i]].id);
+            this.chooseQues.data.splice(this.chooseQues.value[len-i-1],1);
           }
           addTestQuestions(this.chooseQues.volatile,value).then(response =>{
+            this.selectQuestionsByTestId(this.chooseQues.volatile);
             this.$message({
               message: '分配题目成功！',
               type: 'success'
             });
+            this.chooseQues.value = [];
           });
-          this.testDialogVisible = false;
         })
       },
-      cancelConfirm(){
-        this.testDialogVisible = false;
+      delQuestion(index,row) {
+        this.$confirm('是否要确认?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let param = {
+            quesId: row.id,
+            testId: this.chooseQues.volatile
+          };
+          delTestQuestions(param).then(response => {
+            this.$message({
+              message: '删除题目成功！',
+              type: 'success'
+            });
+            this.selectQuestionsByTestId(this.chooseQues.volatile);
+          })
+        })
       }
     }
   }
 </script>
+<style>
+  .dialogClass .el-dialog__body {
+    padding-top: 0;
+  }
+</style>
+
 <style scoped>
   .input-width {
     width: 203px;
