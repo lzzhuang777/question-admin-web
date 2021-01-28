@@ -286,7 +286,7 @@
       handleUpdate(index, row) {
         this.dialogVisible = true;
         this.isEdit = true;
-        this.test = Object.assign({},row);
+        this.interview = Object.assign({},row);
       },
       getList() {
         this.listLoading = true;

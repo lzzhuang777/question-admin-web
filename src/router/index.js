@@ -183,6 +183,14 @@ export const asyncRouterMap = [
         meta: {title: '测验列表',icon: 'product-list'},
 
       },
+      {
+        path: 'interview',
+        name: 'interview',
+        component: () => import('@/views/qms/interview/index'),
+        meta: {title: '面试知识列表',icon: 'product-list'},
+
+      },
+
     ]
   },
   {
