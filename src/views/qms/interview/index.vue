@@ -65,14 +65,11 @@
           <template slot-scope="scope">
             <el-switch
               @change="handleUpdateStatus(scope.$index, scope.row)"
-              :active-value="1"
-              :inactive-value="0"
+              :active-value="true"
+              :inactive-value="false"
               v-model="scope.row.status">
             </el-switch>
           </template>
-        </el-table-column>
-        <el-table-column label="浏览" width="120" align="center">
-          <template slot-scope="scope">{{scope.row.viewCount}}</template>
         </el-table-column>
         <el-table-column label="操作" width="120" align="center">
           <template slot-scope="scope">
@@ -340,6 +337,33 @@
            * 2. 通过$refs获取: html声明ref : `<mavon-editor ref=md ></mavon-editor>，`$vm`为 `this.$refs.md`
            */
           this.$refs.md.$img2Url(pos, response.data.url);
+        })
+      },
+      handleDialogConfirm(){
+        this.$confirm('是否要确认?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          if (this.isEdit) {
+            updateInterview(this.interview.id,this.interview).then(response => {
+              this.$message({
+                message: '修改成功！',
+                type: 'success'
+              });
+              this.dialogVisible =false;
+              this.getList();
+            })
+          } else {
+            createInterview(this.interview).then(response => {
+              this.$message({
+                message: '添加成功！',
+                type: 'success'
+              });
+              this.dialogVisible =false;
+              this.getList();
+            })
+          }
         })
       }
     }
